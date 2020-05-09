@@ -9,9 +9,11 @@ class AnimationDefExample extends StatefulWidget {
 class _AnimationDefExampleState extends State<AnimationDefExample> {
   final GlobalKey _cardKey = GlobalKey();
   Size cardSize;
-  var _dropDown = false;
+  var _dropDown = true;
+  var _isFirst = true;
   Offset cardPosition;
   double _height = 500;
+  double _maxheight = 0;
   getSizeAndPosition() {
     RenderBox _cardBox = _cardKey.currentContext.findRenderObject();
     cardSize = _cardBox.size;
@@ -49,32 +51,33 @@ class _AnimationDefExampleState extends State<AnimationDefExample> {
                             : Icons.arrow_downward),
                         onPressed: () {
                           setState(() {
+                            print('Example Clicked');
+
                             _dropDown = !_dropDown;
                             // _height = _dropDown ? cardSize.height : 0;
-                            _height =
-                                _dropDown ? (cardSize == null) ? 10 :  cardSize.height : 0;
+                            if (_isFirst) {
+                              getSizeAndPosition();
+                              print('_isFirst --->$_isFirst');
+                              _maxheight = cardSize.height;
+                            }
+                            _height = _dropDown ? _maxheight : 0;
+                            _isFirst = false;
                           });
-                          print('Example Clicked');
-                          getSizeAndPosition();
                         })
                   ],
                 ),
               ),
             ),
-            // if (_dropDown)
-            AnimatedContainer(
-              duration: Duration(seconds: 1),
-              curve: Curves.fastOutSlowIn,
-              height: _height,
-              child: Container(
-                //keyContext = stickyKey.currentContext;
-                height: _height,
-                //height: _height,
-                child: Card(
-                  elevation: 10,
-                  child: Container(
-                    key: _cardKey,
-                    child: ListView.builder(
+            if (_isFirst)
+              Card(
+                key: _cardKey,
+                elevation: 10,
+               // color: Colors.red,
+                child: Column(
+                  children: <Widget>[
+                    ListView.builder(
+                      scrollDirection: Axis.vertical,
+                      shrinkWrap: true,
                       itemCount: lsData.length,
                       itemBuilder: (BuildContext context, int index) {
                         return Padding(
@@ -83,10 +86,35 @@ class _AnimationDefExampleState extends State<AnimationDefExample> {
                         );
                       },
                     ),
+                  ],
+                ),
+              ),
+            if (!_isFirst)
+              AnimatedContainer(
+                duration: Duration(seconds: 1),
+                curve: Curves.fastOutSlowIn,
+                height: _height,
+                child: Container(
+                  //keyContext = stickyKey.currentContext;
+                  // height: _height,
+                  //height: _height,
+                  child: Card(
+                    elevation: 10,
+                    child: Container(
+                     // color: Colors.red,
+                      child: ListView.builder(
+                        itemCount: lsData.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(lsData[index]),
+                          );
+                        },
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
             Text("Size - $cardSize"),
             Text("Position - $cardPosition "),
           ],
